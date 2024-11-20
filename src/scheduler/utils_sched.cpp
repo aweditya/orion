@@ -134,11 +134,11 @@ void create_streams(cudaStream_t** sched_streams, int num, bool reef) {
 	// client num-1 is high priority
 	if (!reef) {
 		sched_streams[num-1] = (cudaStream_t*)malloc(sizeof(cudaStream_t));
-		cudaStreamCreateWithPriority(sched_streams[num-1], cudaStreamNonBlocking, *hp);
+		CHECK_CUDA_ERROR(cudaStreamCreateWithPriority(sched_streams[num-1], cudaStreamNonBlocking, *hp));
 	}
 	else {
 		sched_streams[num-1] = (cudaStream_t*)malloc(sizeof(cudaStream_t));
-		cudaStreamCreateWithPriority(sched_streams[num-1], cudaStreamNonBlocking, 0);
+		CHECK_CUDA_ERROR(cudaStreamCreateWithPriority(sched_streams[num-1], cudaStreamNonBlocking, 0));
 	}
 
 }
@@ -237,7 +237,6 @@ void register_functions() {
 }
 
 void schedule_kernel(struct func_record frecord, cudaStream_t* sched_stream, int idx, cudaEvent_t* event, int* seen, int* event_ids, int evid) {
-
 	switch (frecord.type) {
 		case KERNEL_RECORD: {
 			DEBUG_PRINT("found a new kernel record from idx %d! kernel func is %p\n", idx, kernel_function);
@@ -340,9 +339,10 @@ void schedule_kernel(struct func_record frecord, cudaStream_t* sched_stream, int
 		case CUDNN_BNORM_INF_RECORD: {
 			DEBUG_PRINT("found a new bnorm inf record from idx %d!\n", idx);
 			cudnnBatchNormalizationForwardInference_record record = frecord.data.cudnnBNormInfRecord;
-			//printf("Got a CUDNN operation from client %d, handle is %p\n", idx, record.handle);
+			printf("Got a CUDNN operation from client %d, handle is %p\n", idx, record.handle);
 			cudnnStatus_t status = CUDNN_STATUS_SUCCESS;
 			status = cudnnSetStream(record.handle, *sched_stream);
+			printf("cudnnSetStream returned: %d\n", status);
 			assert (status == CUDNN_STATUS_SUCCESS);
 			(*cudnn_bnorm_infer_function)(record.handle, record.mode, record.alpha, record.beta, record.xDesc, record.x, record.yDesc, record.y, record.bnScaleBiasMeanVarDesc, record.bnScale, record.bnBias, record.estimatedMean, record.estimatedVariance, record.epsilon);
 			//cudnnSetStream(record.handle, 0);

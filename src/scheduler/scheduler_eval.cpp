@@ -239,15 +239,7 @@ void* Scheduler::busy_wait_profile(int num_clients, int iter, bool warmup, int w
 
 
 	DEBUG_PRINT("Entered busy_wait_profile! Num clients is %d\n", num_clients);
-	int start0 = 0;
-	int start1 = 0;
 
-	int prev_large = -1;
-	int hp_running = -1;
-
-	bool inf_finished = false;
-	bool started = false;
- 	std::chrono::time_point<std::chrono::system_clock> start_time;
 	auto start_total = std::chrono::high_resolution_clock::now();
 
 	vector<bool> total_client_set(num_clients, false);
@@ -553,9 +545,9 @@ extern "C" {
 
 		struct passwd *pw = getpwuid(getuid());
 		char *homedir = pw->pw_dir;
-		char* lib_path = "/orion/src/cuda_capture/libinttemp.so";
+		std::string lib_path = "/Labs/research/orion/src/cuda_capture/libinttemp.so";
 
-		klib = dlopen(strcat(homedir, lib_path), RTLD_NOW | RTLD_GLOBAL);
+		klib = dlopen(strcat(homedir, lib_path.c_str()), RTLD_NOW | RTLD_GLOBAL);
 
 		if (!klib) {
 			fprintf(stderr, "Error: %s\n", dlerror());
@@ -596,7 +588,7 @@ extern "C" {
 			for (auto info: op_info_vector[i])
 				max_sm_used = max(max_sm_used, info.sm_used);
 			max_sms_clients.push_back(max_sm_used);
-			printf("----------- SIZE: %d\n", op_info_vector[i].size());
+			printf("----------- SIZE: %lu\n", op_info_vector[i].size());
 			is_train.push_back(train[i]);
 		}
 
@@ -625,7 +617,7 @@ extern "C" {
 		queue<func_record>** buffers = *buffers_ptr;
 		for (int i=0; i<num_clients; i++) {
 			buffers[i] = new queue<func_record>();
-			printf("size is %d\n", buffers[i]->size());
+			printf("size is %lu\n", buffers[i]->size());
 		}
 
 		pthread_mutex_t*** client_mutexes_ptr = (pthread_mutex_t***)dlsym(klib, "mutexes");

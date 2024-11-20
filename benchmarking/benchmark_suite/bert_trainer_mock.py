@@ -49,7 +49,7 @@ def check_stop(backend_lib):
 def bert_loop(batchsize, train, num_iters, rps, uniform, dummy_data, local_rank, barriers, client_barrier, tid):
 
     seed_everything(42)
-    backend_lib = cdll.LoadLibrary(os.path.expanduser('~') + "/orion/src/cuda_capture/libinttemp.so")
+    backend_lib = cdll.LoadLibrary(os.path.expanduser('~/Labs/research') + "/orion/src/cuda_capture/libinttemp.so")
 
     if rps > 0:
         if uniform:
